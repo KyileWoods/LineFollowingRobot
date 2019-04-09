@@ -104,7 +104,7 @@ void MotorControlSetup() {
 
 int read_LED(LED_number){
 
-	ADMUX = 0x00;
+	ADMUX = 0x00; //Fresh slate
 	ADCSRB = 0x00;
 	ADMUX |= (1 << REFS1) | (1 << REFS0) | (1 << ADLAR);
 	ADCSRA |= (1 << ADEN) | (1 << ADATE) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
@@ -164,23 +164,26 @@ int main(){
 	DDRB |= (1 << 3);
 	PORTB |= (1 << 3); //Turn on the detector emittors
 
-	DDRD |= 0XFF; //Only if PORTD is used for the LED-board, displaying values you assign (in binary)
+	DDRD |= 0XFF; //Only if PORTD is used for the LED-board, displaying values you assign (in binary) (This could be put into a headerfile)
 
 	shutter(30,20);
 	_delay_ms(2000); //For safety: flash and wait for 2 seconds
 
 	MotorControlSetup();
-	// // //sei(); //<<~~This function is MESSING with the entire program. It causes While(1) loops to be avoided entirely. Very unpredictable behaviour
+	
 	while(1){
 		//-----Get the values of all the LED's
 		for (int i = 0; i <= 7; i++) {
-			LEDS[i] = read_LED(i+1); //i+1 , beause the 1st LED is assigned to the array location 0, (i-1) and so on.
+			LEDS[i] = read_LED(i+1); //i+1 , beause the 1st LED is assigned to 0th array location, (i-1) and so on.
 		}
 		
-		for(int i=1;i<=4;i++){
-			diffs[i-1] = LEDS[i+4]-LEDS[i];
+		for (int i=0;i<=7; i++){
+		    
 		}
 		
+		for(int i=1;i<=4;i++){ //Diffs may not be necessary to be found, but this is how they'd be foud, anyway.
+			diffs[i-1] = LEDS[8-i]-LEDS[i]; //Close in from the edges. Positive values mean  left reading is stronger than right
+		}
 		
 		//------Assign the motor speed to the motors/timers		
 		OCR0A = base_speed+3*diffs[3]+2*diffs[2]+diffs[1]; //Set duty cycle for pin B7 x/255 motor B

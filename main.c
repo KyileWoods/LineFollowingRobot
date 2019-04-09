@@ -1,14 +1,11 @@
-/*#define F_CPU 16000000UL
+#define F_CPU 16000000UL
 #include <stdint.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
-*/
 
-#define F_CPU 16000000UL 
-#include <avr/io.h>
-#include <util/delay.h>
-#include <stdint.h>
+
+
 /*The following definitions allow you to compare two sets of bit (any size)
 and bit-wise operate on specified bits, and the result is returned.
 Eg: if p=10011010, m=2, then bit_set(p,m)returns 10011110
@@ -61,21 +58,13 @@ void shutter(int time, int flashes) {
 	}
 }
 
-void MotorControlSetup() {
-	DDRB |= (1 << 7); //set pin B7 as output
-	DDRB |= (1 << 5); //set pin B5 as output
-	timer1_init();
-	timer0_init();
-}
-
-
 /*Timers work like this: There is a certain register (TCNT0->TimerCouNTer0)(8/16 bits) which increases automatically, but can also be written to (and begins couting up again)
 A second register (OutputCompareRegisterA) holds a value which is constantly compared against the timer. If the timer exceeds the value, the timer can be reset to zero.
 
 */
 
 
-void timer0_init() {
+void timer0_init(){
 
 
 	//set up timer0 to output fast PWM, 256 prescaler, clear on compare match, set on top
@@ -92,7 +81,7 @@ void timer0_init() {
 //ISR(TIMER0_OVF_vect) { }//interrupt called when timer0 overflows
 
 
-void timer1_init() {
+void timer1_init(){
 
 	//set up timer1 to output fast PWM (8-bit), 256 prescaler, clear on compare match, set on top
 
@@ -105,11 +94,17 @@ void timer1_init() {
 	TCCR1B |= (1 << 2);
 
 }
-//ISR(TIMER1_OVF_vect) {} //interrupt called when timer1 overflows
 
-int read_LED(LED_number) {
+void MotorControlSetup() {
+	DDRB |= (1 << 7); //set pin B7 as output
+	DDRB |= (1 << 5); //set pin B5 as output
+	timer1_init();
+	timer0_init();
+}
 
-	ADMUX = 0x00;
+int read_LED(LED_number){
+
+	ADMUX = 0x00; //Fresh slate
 	ADCSRB = 0x00;
 	ADMUX |= (1 << REFS1) | (1 << REFS0) | (1 << ADLAR);
 	ADCSRA |= (1 << ADEN) | (1 << ADATE) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
@@ -169,22 +164,27 @@ int main(){
 	DDRB |= (1 << 3);
 	PORTB |= (1 << 3); //Turn on the detector emittors
 
-	DDRD |= 0XFF; //Only if PORTD is used for the LED-board, displaying values you assign (in binary)
+	DDRD |= 0XFF; //Only if PORTD is used for the LED-board, displaying values you assign (in binary) (This could be put into a headerfile)
 
 	shutter(30,20);
 	_delay_ms(2000); //For safety: flash and wait for 2 seconds
 
 	MotorControlSetup();
-	// // //sei(); //<<~~This function is MESSING with the entire program. It causes While(1) loops to be avoided entirely. Very unpredictable behaviour
+	
 	while(1){
 		//-----Get the values of all the LED's
 		for (int i = 0; i <= 7; i++) {
-			LEDS[i] = read_LED(i+1); //i+1 , beause the 1st LED is assigned to the array location 0, (i-1) and so on.
+			LEDS[i] = read_LED(i+1); //i+1 , beause the 1st LED is assigned to 0th array location, (i-1) and so on.
 		}
 		
-		for(int i=1;i<=4;i++){
-			diffs[i-1] = LEDS[i+4]-LEDS[i];
+		for (int i=0;i<=7; i++){
+		    
 		}
+		
+		for(int i=1;i<=4;i++){ //Diffs may not be necessary to be found, but this is how they'd be foud, anyway.
+			diffs[i-1] = LEDS[8-i]-LEDS[i]; //Close in from the edges. Positive values mean  left reading is stronger than right
+		}
+		
 		
 		
 		//------Assign the motor speed to the motors/timers		
