@@ -9,6 +9,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdint.h>
+
+#include "Motors.h"
 /*The following definitions allow you to compare two sets of bit (any size)
 and bit-wise operate on specified bits, and the result is returned.
 Eg: if p=10011010, m=2, then bit_set(p,m)returns 10011110
@@ -61,53 +63,8 @@ void shutter(int time, int flashes) {
 	}
 }
 
-void MotorControlSetup() {
-	DDRB |= (1 << 7); //set pin B7 as output
-	DDRB |= (1 << 5); //set pin B5 as output
-	timer1_init();
-	timer0_init();
-}
 
-
-/*Timers work like this: There is a certain register (TCNT0->TimerCouNTer0)(8/16 bits) which increases automatically, but can also be written to (and begins couting up again)
-A second register (OutputCompareRegisterA) holds a value which is constantly compared against the timer. If the timer exceeds the value, the timer can be reset to zero.
-
-*/
-
-
-void timer0_init() {
-
-
-	//set up timer0 to output fast PWM, 256 prescaler, clear on compare match, set on top
-
-	DDRB |= (1 << 7);
-	DDRD |= (1 << 0);
-	TCCR0A |= (1 << 7) | (1 << 5) | (1 << 1) | 1;
-	TIMSK0 |= (1 << 0); //enable overflow interrupt
-	OCR0A = 0;
-	OCR0B = 0;
-	TCCR0B |= (1 << 2); // xxxxxnnn->prescale by: 1=1;2=64,3=256 {100=3}
-
-}
-//ISR(TIMER0_OVF_vect) { }//interrupt called when timer0 overflows
-
-
-void timer1_init() {
-
-	//set up timer1 to output fast PWM (8-bit), 256 prescaler, clear on compare match, set on top
-
-	DDRB |= (1 << 6) | (1 << 5);
-	TCCR1A |= (1 << 7) | (1 << 5) | 1;
-	TCCR1B |= (1 << 3);
-	TIMSK1 |= (1 << 0); ////enable overflow interrupt
-	OCR1A = 0;
-	OCR1B = 0;
-	TCCR1B |= (1 << 2);
-
-}
-//ISR(TIMER1_OVF_vect) {} //interrupt called when timer1 overflows
-
-int read_LED(LED_number) {
+int read_LED(int LED_number) {
 
 	ADMUX = 0x00;
 	ADCSRB = 0x00;
@@ -116,35 +73,35 @@ int read_LED(LED_number) {
 
 	switch (LED_number) {
 	case 1:  //ADC4
-		ADMUX |= (1 << ADMUX2); //Could also be written as:		  ADMUX |= 4;
+		ADMUX |= (1 << MUX2); //Could also be written as:	//MUX |= 4;
 		break;
 	case 2:  //ADC5
-		ADMUX |= (1 << ADMUX2) | (1 << ADMUX0);				    //ADMUX |= 5;
+		ADMUX |= (1 << MUX2) | (1 << MUX0);				    //MUX |= 5;
 		break;
 	case 3:  //ADC6
-		ADMUX |= (1 << ADMUX2) | (1 << ADMUX1);					//ADMUX |= 6;
+		ADMUX |= (1 << MUX2) | (1 << MUX1);					//MUX |= 6;
 		break;
 	case 4:  //ADC7
-		ADMUX |= (1 << ADMUX2) | (1 << ADMUX1) | (1 << ADMUX0); //ADMUX |= 7;
+		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0); //MUX |= 7;
 		break;
 
 	case 5:  //ADC11
-		ADCSRB |= (1 << ADMUX5);
-		ADMUX |= (1 << ADMUX1) | (1 << ADMUX0);
+		ADCSRB |= (1 << MUX5);
+		ADMUX |= (1 << MUX1) | (1 << MUX0);
 		break;
 
 	case 6:  //ADC10
-		ADCSRB |= (1 << ADMUX5);
-		ADMUX |= (1 << ADMUX1);
+		ADCSRB |= (1 << MUX5);
+		ADMUX |= (1 << MUX1);
 		break;
 
 	case 7:  //ADC9
-		ADCSRB |= (1 << ADMUX5);
-		ADMUX |= (1 << ADMUX0);
+		ADCSRB |= (1 << MUX5);
+		ADMUX |= (1 << MUX0);
 		break;
 
 	case 8:  //ADC8
-		ADCSRB |= (1 << ADMUX5);
+		ADCSRB |= (1 << MUX5);
 		//No ADMUX bits for ADC8
 		break;
 
