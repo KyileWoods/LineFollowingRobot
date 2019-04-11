@@ -1,3 +1,4 @@
+//Main
 #define F_CPU 16000000UL
 #include <stdint.h>
 #include <avr/io.h>
@@ -102,7 +103,7 @@ void MotorControlSetup() {
 	timer0_init();
 }
 
-int read_LED(LED_number){
+int read_LED(int LED_number){
 
 	ADMUX = 0x00; //Fresh slate
 	ADCSRB = 0x00;
@@ -111,36 +112,36 @@ int read_LED(LED_number){
 
 	switch (LED_number) {
 	case 1:  //ADC4
-		ADMUX |= (1 << ADMUX2); //Could also be written as:		  ADMUX |= 4;
+		ADMUX |= (1 << MUX2); //Could also be written as:		  ADMUX |= 4;
 		break;
 	case 2:  //ADC5
-		ADMUX |= (1 << ADMUX2) | (1 << ADMUX0);				    //ADMUX |= 5;
+		ADMUX |= (1 << MUX2) | (1 << MUX0);				    //MUX |= 5;
 		break;
 	case 3:  //ADC6
-		ADMUX |= (1 << ADMUX2) | (1 << ADMUX1);					//ADMUX |= 6;
+		ADMUX |= (1 << MUX2) | (1 << MUX1);					//MUX |= 6;
 		break;
 	case 4:  //ADC7
-		ADMUX |= (1 << ADMUX2) | (1 << ADMUX1) | (1 << ADMUX0); //ADMUX |= 7;
+		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0); //MUX |= 7;
 		break;
 
 	case 5:  //ADC11
-		ADCSRB |= (1 << ADMUX5);
-		ADMUX |= (1 << ADMUX1) | (1 << ADMUX0);
+		ADCSRB |= (1 << MUX5);
+		ADMUX |= (1 << MUX1) | (1 << MUX0);
 		break;
 
 	case 6:  //ADC10
-		ADCSRB |= (1 << ADMUX5);
-		ADMUX |= (1 << ADMUX1);
+		ADCSRB |= (1 << MUX5);
+		ADMUX |= (1 << MUX1);
 		break;
 
 	case 7:  //ADC9
-		ADCSRB |= (1 << ADMUX5);
-		ADMUX |= (1 << ADMUX0);
+		ADCSRB |= (1 << MUX5);
+		ADMUX |= (1 << MUX0);
 		break;
 
 	case 8:  //ADC8
-		ADCSRB |= (1 << ADMUX5);
-		//No ADMUX bits for ADC8
+		ADCSRB |= (1 << MUX5);
+		//No MUX bits for ADC8
 		break;
 
 	}
