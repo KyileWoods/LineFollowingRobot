@@ -48,7 +48,7 @@ void BPin_Toggle(char pin) {
 
 int LEDS[8];
 int diffs[4];
-int base_speed = 50; //duty cycle /255
+int base_speed = 20; //duty cycle /255
 
 
 int16_t LED_values[8];
@@ -79,8 +79,12 @@ int main() {
 		for (int i = 0; i < 8; i++) {
 			weighted_LED_sum = (i + 1)*LED_values[i];
 		}
+		error = 2*base_speed*(weighted_LED_sum / sum_LED_values)-base_speed; 
+		/*
 		error = 1000 * (weighted_LED_sum / sum_LED_values) - 4500; 
-		/*This line will most likely need modifying. The 1000* and -4500 are both arbitrary, copied form another robot's example code.*/
+		This error-asignment line will most likely need modifying. The 1000* and -4500 are both arbitrary, copied form another robot's example code.*/
+	OCR0A = base_speed+error;
+	OCR1A = base_speed-error;	
 	}
 	return 0;
 }
