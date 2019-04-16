@@ -1,2 +1,7 @@
 
 FLASH.bin
+main.elf
+main.o
+Motors.o
+MiscFuncs.o
+Sensors.o
