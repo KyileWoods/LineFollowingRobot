@@ -1,12 +1,13 @@
 //Main
-#define F_CPU 16000000UL
-#include <stdint.h>
+
+#define F_CPU 16000000UL 
 #include <avr/io.h>
 #include <util/delay.h>
-#include <avr/interrupt.h>
+#include <stdint.h>
 
-
-
+#include "Motors.h"
+#include "Sensors.h"
+#include "MiscFuncs.h"
 /*The following definitions allow you to compare two sets of bit (any size)
 and bit-wise operate on specified bits, and the result is returned.
 Eg: if p=10011010, m=2, then bit_set(p,m)returns 10011110
@@ -42,116 +43,7 @@ void BPin_Toggle(char pin) {
 	PORTB ^= (1 << pin);
 }
 
-void shutter(int time, int flashes) {
-	//simply to indicate the passage through a certain point of code
 
-	for (int i = 0; i < flashes; i++) {
-		PORTB = 0B11111111;
-		PORTC = 0B11111111;
-		PORTD = 0B11111111;
-		PORTE = 0B11111111;
-		_delay_ms(time);
-		PORTB = 0B00000000;
-		PORTC = 0B00000000;
-		PORTD = 0B00000000;
-		PORTE = 0B00000000;
-		_delay_ms(time);
-	}
-}
-
-/*Timers work like this: There is a certain register (TCNT0->TimerCouNTer0)(8/16 bits) which increases automatically, but can also be written to (and begins couting up again)
-A second register (OutputCompareRegisterA) holds a value which is constantly compared against the timer. If the timer exceeds the value, the timer can be reset to zero.
-
-*/
-
-
-void timer0_init(){
-
-
-	//set up timer0 to output fast PWM, 256 prescaler, clear on compare match, set on top
-
-	DDRB |= (1 << 7);
-	DDRD |= (1 << 0);
-	TCCR0A |= (1 << 7) | (1 << 5) | (1 << 1) | 1;
-	TIMSK0 |= (1 << 0); //enable overflow interrupt
-	OCR0A = 0;
-	OCR0B = 0;
-	TCCR0B |= (1 << 2); // xxxxxnnn->prescale by: 1=1;2=64,3=256 {100=3}
-
-}
-//ISR(TIMER0_OVF_vect) { }//interrupt called when timer0 overflows
-
-
-void timer1_init(){
-
-	//set up timer1 to output fast PWM (8-bit), 256 prescaler, clear on compare match, set on top
-
-	DDRB |= (1 << 6) | (1 << 5);
-	TCCR1A |= (1 << 7) | (1 << 5) | 1;
-	TCCR1B |= (1 << 3);
-	TIMSK1 |= (1 << 0); ////enable overflow interrupt
-	OCR1A = 0;
-	OCR1B = 0;
-	TCCR1B |= (1 << 2);
-
-}
-
-void MotorControlSetup() {
-	DDRB |= (1 << 7); //set pin B7 as output
-	DDRB |= (1 << 5); //set pin B5 as output
-	timer1_init();
-	timer0_init();
-}
-
-int read_LED(int LED_number){
-
-	ADMUX = 0x00; //Fresh slate
-	ADCSRB = 0x00;
-	ADMUX |= (1 << REFS1) | (1 << REFS0) | (1 << ADLAR);
-	ADCSRA |= (1 << ADEN) | (1 << ADATE) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
-
-	switch (LED_number) {
-	case 1:  //ADC4
-		ADMUX |= (1 << MUX2); //Could also be written as:		  ADMUX |= 4;
-		break;
-	case 2:  //ADC5
-		ADMUX |= (1 << MUX2) | (1 << MUX0);				    //MUX |= 5;
-		break;
-	case 3:  //ADC6
-		ADMUX |= (1 << MUX2) | (1 << MUX1);					//MUX |= 6;
-		break;
-	case 4:  //ADC7
-		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0); //MUX |= 7;
-		break;
-
-	case 5:  //ADC11
-		ADCSRB |= (1 << MUX5);
-		ADMUX |= (1 << MUX1) | (1 << MUX0);
-		break;
-
-	case 6:  //ADC10
-		ADCSRB |= (1 << MUX5);
-		ADMUX |= (1 << MUX1);
-		break;
-
-	case 7:  //ADC9
-		ADCSRB |= (1 << MUX5);
-		ADMUX |= (1 << MUX0);
-		break;
-
-	case 8:  //ADC8
-		ADCSRB |= (1 << MUX5);
-		//No MUX bits for ADC8
-		break;
-
-	}
-
-	//Start the conversion, wait for it to be done, return the result
-	ADCSRA |= (1 << ADSC);
-	while (~ADCSRA &(1 << ADIF)) {}
-	return ADCH;
-
-}
 
 int delayer = 0;
 int which_way = 1;
@@ -160,13 +52,15 @@ int diffs[4];
 int white_threshold = 240;
 int base_speed = 50; //duty cycle /255
 
+
 int main(){
 
 	DDRB |= (1 << 3);
-	PORTB |= (1 << 3); //Turn on the detector emittors
 
-	DDRD |= 0XFF; //Only if PORTD is used for the LED-board, displaying values you assign (in binary) (This could be put into a headerfile)
-
+	PORTB |= (1 << 3); //Turn on the IR-emittors
+	
+	PortDasBinary(0);
+	
 	shutter(30,20);
 	_delay_ms(2000); //For safety: flash and wait for 2 seconds
 
@@ -191,7 +85,6 @@ int main(){
 		//------Assign the motor speed to the motors/timers		
 		OCR0A = base_speed+3*diffs[3]+2*diffs[2]+diffs[1]; //Set duty cycle for pin B7 x/255 motor B
 		OCR1A = base_speed-3*diffs[3]-2*diffs[2]-diffs[1]; //set duty cycle for pin B5 x/255 motor A
-		PORTD = base_speed+balancer;
 
 	}
 
