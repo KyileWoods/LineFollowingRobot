@@ -45,47 +45,42 @@ void BPin_Toggle(char pin) {
 
 
 
-int delayer = 0;
-int which_way = 1;
+
 int LEDS[8];
 int diffs[4];
-int white_threshold = 240;
 int base_speed = 50; //duty cycle /255
 
 
-int main(){
-
+int16_t LED_values[8];
+int16_t sum_LED_values;
+int16_t weighted_LED_sum;
+int16_t error;
+int main() {
+	 
+	 //Turn on the IR-emittors
 	DDRB |= (1 << 3);
-
-	PORTB |= (1 << 3); //Turn on the IR-emittors
+	PORTB |= (1 << 3);
 	
 	PortDasBinary(0);
 	
+	//For safety: flash and wait for 2 seconds
 	shutter(30,20);
-	_delay_ms(2000); //For safety: flash and wait for 2 seconds
+	_delay_ms(2000); 
 
 	MotorControlSetup();
-	
-	while(1){
-		//-----Get the values of all the LED's
-		for (int i = 0; i <= 7; i++) {
-			LEDS[i] = read_LED(i+1); //i+1 , beause the 1st LED is assigned to 0th array location, (i-1) and so on.
-		}
-		
-		for (int i=0;i<=7; i++){
-		    
-		}
-		
-		for(int i=1;i<=4;i++){ //Diffs may not be necessary to be found, but this is how they'd be foud, anyway.
-			diffs[i-1] = LEDS[8-i]-LEDS[i]; //Close in from the edges. Positive values mean  left reading is stronger than right
-		}
-		
-		
-		
-		//------Assign the motor speed to the motors/timers		
-		OCR0A = base_speed+3*diffs[3]+2*diffs[2]+diffs[1]; //Set duty cycle for pin B7 x/255 motor B
-		OCR1A = base_speed-3*diffs[3]-2*diffs[2]-diffs[1]; //set duty cycle for pin B5 x/255 motor A
 
+	while (1) {
+		sum_LED_values = 0;
+		for (int i = 1; i <= 8; i++) {
+			LED_values[i - 1] = read_LED(i);
+			sum_LED_values = sum_LED_values + LED_values[i - 1];
+		}
+
+		for (int i = 0; i < 8; i++) {
+			weighted_LED_sum = (i + 1)*LED_values[i];
+		}
+		error = 1000 * (weighted_LED_sum / sum_LED_values) - 4500; 
+		/*This line will most likely need modifying. The 1000* and -4500 are both arbitrary, copied form another robot's example code.*/
 	}
-
+	return 0;
 }
