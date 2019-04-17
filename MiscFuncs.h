@@ -7,4 +7,6 @@ void shutter(int time, int flashes);
 
 void PortDasBinary(int OnOrOff);
 
+void counterD(int time);
+
 #endif
