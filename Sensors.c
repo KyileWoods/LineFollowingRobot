@@ -18,7 +18,7 @@ int read_LED(int LED_number) {
 		ADMUX |= (1 << MUX2) | (1 << MUX1);					//MUX |= 6;
 		break;
 	case 4:  //ADC7
-		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0); //MUX |= 7;
+		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0);   //MUX |= 7;
 		break;
 
 	case 5:  //ADC11

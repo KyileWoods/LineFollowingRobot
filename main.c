@@ -1,4 +1,4 @@
-//Main
+//Main.
 
 #define F_CPU 16000000UL 
 #include <avr/io.h>
@@ -33,40 +33,27 @@ int wheel_circumference_mm = 115;
 
 
 
-void BPin_On(char pin) {
-	PORTB |= (1 << pin);
-}
-void BPin_Off(char pin) {
-	PORTB &= ~(1 << pin);
-}
-void BPin_Toggle(char pin) {
-	PORTB ^= (1 << pin);
-}
+int16_t LED_values[7];
+int16_t sum_LED_values=0;
+int16_t weighted_sum_LED_values=0;
+int16_t error=0;
+int16_t steering_correction=0;
 
+int base_speed = 50; //duty cycle /255
 
-
-
-int LEDS[8];
-int diffs[4];
-int base_speed = 20; //duty cycle /255
-
-
-int16_t LED_values[8];
-int16_t sum_LED_values;
-int16_t weighted_sum_LED_values;
-int16_t error;
-int16_t steering_correction;
 int main() {
+	 	//For safety: flash and wait for some amount of seconds
+	shutter(30,20);
+	_delay_ms(2000); 
+	 
 	 
 	 //Turn on the IR-emittors
 	DDRB |= (1 << 3);
 	PORTB |= (1 << 3);
 	
 	PortDasBinary(0);
-	
-	//For safety: flash and wait for 2 seconds
-	shutter(30,20);
-	_delay_ms(2000); 
+			
+
 
 	MotorControlSetup();
 
@@ -80,12 +67,14 @@ int main() {
 		for (int i = 0; i < 8; i++) {
 			weighted_sum_LED_values = (i)*LED_values[i];
 		}
-			/*=[  1000*(0<7)-(7/2) ] */
-		error = 1000*(weighted_sum_LED_values / sum_LED_values)-3500;
-		steering_correction = error/10; //normalise to 255
-		steering_correction = steering_correction/10; //normalise to 255
-	OCR0A = base_speed+error; //Not sure yet which one should gain the error, which subtracts. We should #define thse as 'rightMotor" /'leftMotor"
-	OCR1A = base_speed-error;	
+	
+		/*=[  1000*(0<7)-(7/2) ] */
+	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500;
+	steering_correction = error/14; //normalise to 255
+	steering_correction = steering_correction/6; //normalise down to reasonable range (255/x)
+	
+	OCR1A = base_speed+steering_correction;
+	OCR0A = base_speed-steering_correction; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
 	}
 	return 0;
 }
