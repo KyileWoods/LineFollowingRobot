@@ -69,7 +69,7 @@ int main() {
 		}
 	
 		/*=[  1000*(0<7)-(7/2) ] */
-	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500;
+	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500; //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
 	steering_correction = error/14; //normalise to 255
 	steering_correction = steering_correction/6; //normalise down to reasonable range (255/x)
 	
