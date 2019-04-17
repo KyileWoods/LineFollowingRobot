@@ -53,8 +53,9 @@ int base_speed = 20; //duty cycle /255
 
 int16_t LED_values[8];
 int16_t sum_LED_values;
-int16_t weighted_LED_sum;
+int16_t weighted_sum_LED_values;
 int16_t error;
+int16_t steering_correction;
 int main() {
 	 
 	 //Turn on the IR-emittors
@@ -77,13 +78,13 @@ int main() {
 		}
 
 		for (int i = 0; i < 8; i++) {
-			weighted_LED_sum = (i + 1)*LED_values[i];
+			weighted_sum_LED_values = (i)*LED_values[i];
 		}
-		error = 2*base_speed*(weighted_LED_sum / sum_LED_values)-base_speed; 
-		/*
-		error = 1000 * (weighted_LED_sum / sum_LED_values) - 4500; 
-		This error-asignment line will most likely need modifying. The 1000* and -4500 are both arbitrary, copied form another robot's example code.*/
-	OCR0A = base_speed+error;
+			/*=[  1000*(0<7)-(7/2) ] */
+		error = 1000*(weighted_sum_LED_values / sum_LED_values)-3500;
+		steering_correction = error/10; //normalise to 255
+		steering_correction = steering_correction/10; //normalise to 255
+	OCR0A = base_speed+error; //Not sure yet which one should gain the error, which subtracts.
 	OCR1A = base_speed-error;	
 	}
 	return 0;
