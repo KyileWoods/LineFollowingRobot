@@ -84,7 +84,7 @@ int main() {
 		error = 1000*(weighted_sum_LED_values / sum_LED_values)-3500;
 		steering_correction = error/10; //normalise to 255
 		steering_correction = steering_correction/10; //normalise to 255
-	OCR0A = base_speed+error; //Not sure yet which one should gain the error, which subtracts.
+	OCR0A = base_speed+error; //Not sure yet which one should gain the error, which subtracts. We should #define thse as 'rightMotor" /'leftMotor"
 	OCR1A = base_speed-error;	
 	}
 	return 0;
