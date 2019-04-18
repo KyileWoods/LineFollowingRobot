@@ -28,8 +28,8 @@ void timer1_init(){
 void ADC_trim_init(){
     ADMUX = (0xE0); //Sets the reference to the internal 2.56V and left adjusts the results
     ADCSRA = (0x87); // Enables the ADC conversion and sets the prescaler to 128
-   DDRB |= (1<<3); //This and the next line turns on the IR LED of the sensor board.
-   PORTB |= (1<<3);
+	DDRB |= (1<<3); //This and the next line turns on the IR LED of the sensor board.
+	PORTB |= (1<<3);
 }
 
 // Reads ADC4 which is connected to sensor 1 on sensor board
@@ -144,8 +144,6 @@ void centre_normalise(void){
     _delay_ms(2000);
     PORTB = (PORTB & 0b11111101);
 }
-
-
 
 void setup(){
     timer0_init();
