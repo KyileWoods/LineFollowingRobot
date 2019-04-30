@@ -4,6 +4,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "Motors.h"
 #include "Sensors.h"
@@ -33,16 +35,18 @@ int wheel_circumference_mm = 115;
 
 
 
-int16_t LED_values[7];
+int16_t LED_values[2];
 int16_t sum_LED_values=0;
 int16_t weighted_sum_LED_values=0;
 int16_t error=0;
+int16_t proportional=0;
+int16_t kp=500;
 int16_t steering_correction=0;
 
-int base_speed = 50; //duty cycle /255
+int base_speed = 45; //duty cycle /255
 
 int main() {
-	 	//For safety: flash and wait for some amount of seconds
+	 //For safety: flash and wait for some amount of seconds
 	shutter(30,20);
 	_delay_ms(2000); 
 	 
@@ -58,25 +62,19 @@ int main() {
 	MotorControlSetup();
 
 	while (1) {
-		sum_LED_values = 0;
-		for (int i = 1; i <= 8; i++) {
-			LED_values[i - 1] = read_LED(i);
-			sum_LED_values = sum_LED_values + LED_values[i - 1];
+			for (int i = 0; i <= 1; i++) {
+				LED_values[i] = read_LED(i+4);
+			}
+		proportional =abs( kp*(LED_values[0]-LED_values[1]));
+		
+		if(LED_values[0]>LED_values[1]){
+			OCR1A = 45-(proportional)/1000;
+			OCR0A = 45+(proportional)/1000;
 		}
-
-		for (int i = 0; i < 7; i++) {
-			weighted_sum_LED_values = (i)*LED_values[i];
+		else{
+			OCR1A = 45+(proportional)/1000;
+			OCR0A = 45-(proportional)/1000;
 		}
-	
-		/*=[  1000*(0<7)-(7/2) ] */
-	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500; //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
-	steering_correction = error/14; //normalise to 255
-	steering_correction = steering_correction/6; //normalise down to reasonable range (255/x)
-	
-	
-	
-	OCR1A = base_speed+steering_correction;
-	OCR0A = base_speed-steering_correction; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
 	}
 	return 0;
 }
