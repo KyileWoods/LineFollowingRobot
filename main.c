@@ -33,13 +33,19 @@ int wheel_circumference_mm = 115;
 
 
 
-int16_t LED_values[7];
+int16_t LED_values[8];
 int16_t sum_LED_values=0;
 int16_t weighted_sum_LED_values=0;
-int16_t error=0;
-int16_t steering_correction=0;
 
-int base_speed = 50; //duty cycle /255
+int32_t error=0;
+int16_t kp=100;
+int16_t proportional=0;
+
+int16_t base_speed = 40;
+//base_speed = (3500*kp)/10000; //duty cycle /255
+
+
+int16_t sumcheck =1;
 
 int main() {
 	 	//For safety: flash and wait for some amount of seconds
@@ -59,24 +65,33 @@ int main() {
 
 	while (1) {
 		sum_LED_values = 0;
-		for (int i = 1; i <= 8; i++) {
-			LED_values[i - 1] = read_LED(i);
-			sum_LED_values = sum_LED_values + LED_values[i - 1];
+		weighted_sum_LED_values=0;
+
+		
+		for (int i = 1; i <= 8; i++) { //LED are addressed from RIGHT to LEFT!!
+			LED_values[i - 1] = read_LED(i); //9-1 asks for values from left to right, for storage
 		}
 
-		for (int i = 0; i < 7; i++) {
-			weighted_sum_LED_values = (i)*LED_values[i];
+		for (int i = 0; i <= 7; i++) { //LED are addressed from RIGHT to LEFT!!
+			sum_LED_values = sum_LED_values + LED_values[i];
+			sumcheck =sumcheck+LED_values[i];
+				shutter(20,sumcheck);
+				_delay_ms(1000);
+			
+		}
+
+		for (int j = 0; j < 7; j++) {
+			weighted_sum_LED_values = weighted_sum_LED_values+(j)*LED_values[j];
 		}
 	
-		/*=[  1000*(0<7)-(7/2) ] */
 	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500; //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
-	steering_correction = error/14; //normalise to 255
-	steering_correction = steering_correction/6; //normalise down to reasonable range (255/x)
-	
-	
-	
-	OCR1A = base_speed+steering_correction;
-	OCR0A = base_speed-steering_correction; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
+																	// error-> 0+/-3500
+	proportional = (kp*error)/10000; //~35
+
+
+	OCR0A = base_speed-proportional; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
+	OCR1A = base_speed+proportional;
 	}
 	return 0;
 }
+	
