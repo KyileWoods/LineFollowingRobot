@@ -75,8 +75,7 @@ int main() {
 		for (int i = 0; i <= 7; i++) { //LED are addressed from RIGHT to LEFT!!
 			sum_LED_values = sum_LED_values + LED_values[i];
 			sumcheck =sumcheck+LED_values[i];
-				shutter(20,sumcheck);
-				_delay_ms(1000);
+
 			
 		}
 
