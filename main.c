@@ -34,11 +34,20 @@ int wheel_circumference_mm = 115;
 
 
 int16_t LED_values[8];
+int LED1;
+int LED2;
+int LED3;
+int LED4;
+int LED5;
+int LED6;
+int LED7;
+int LED8;
+
 int16_t sum_LED_values=0;
 int16_t weighted_sum_LED_values=0;
 
 int32_t error=0;
-int16_t kp=100;
+int16_t kp=1;
 int16_t proportional=0;
 
 int16_t base_speed = 40;
@@ -68,22 +77,18 @@ int main() {
 		weighted_sum_LED_values=0;
 
 		
-		for (int i = 1; i <= 8; i++) { //LED are addressed from RIGHT to LEFT!!
-			LED_values[i - 1] = read_LED(i); //9-1 asks for values from left to right, for storage
-		}
+		LED1 = read_LED(1);
+		LED2 = read_LED(2);
+		LED3 = read_LED(3);
+		LED4 = read_LED(4);
+		LED5 = read_LED(5);
+		LED6 = read_LED(6);
+		LED7 = read_LED(7);
+		LED8 = read_LED(8);
 
-		for (int i = 0; i <= 7; i++) { //LED are addressed from RIGHT to LEFT!!
-			sum_LED_values = sum_LED_values + LED_values[i];
-			sumcheck =sumcheck+LED_values[i];
-				shutter(20,sumcheck);
-				_delay_ms(1000);
-			
-		}
+		sum_LED_values = LED1+LED2+LED3+LED4+LED5+LED6+LED7+LED8;
+		weighted_sum_LED_values = LED2+2*LED3+3*LED4+4*LED5+5*LED6+6*LED7+7*LED8;
 
-		for (int j = 0; j < 7; j++) {
-			weighted_sum_LED_values = weighted_sum_LED_values+(j)*LED_values[j];
-		}
-	
 	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500; //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
 																	// error-> 0+/-3500
 	proportional = (kp*error)/10000; //~35
