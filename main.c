@@ -47,10 +47,10 @@ int16_t sum_LED_values=0;
 int16_t weighted_sum_LED_values=0;
 
 int32_t error=0;
-int16_t kp=1;
+int16_t kp=30;
 int16_t proportional=0;
 
-int16_t base_speed = 40;
+int16_t base_speed = 25;
 //base_speed = (3500*kp)/10000; //duty cycle /255
 
 
@@ -62,7 +62,7 @@ int main() {
 	_delay_ms(2000); 
 	 
 	 
-	 //Turn on the IR-emittors
+	//Turn on the IR-emittors
 	DDRB |= (1 << 3);
 	PORTB |= (1 << 3);
 	
@@ -91,11 +91,111 @@ int main() {
 
 	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500; //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
 																	// error-> 0+/-3500
-	proportional = (kp*error)/10000; //~35
+	proportional = kp*(error/10000); //~35
 
 
-	OCR0A = base_speed-proportional; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
-	OCR1A = base_speed+proportional;
+int sensor_out = LED5;
+if(sensor_out >= 0 & sensor_out < 17){
+		PORTE |=(1<<6);
+		PORTB &= ~(1<<0);
+		PORTB &= ~(1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 17 & sensor_out < 34){
+		PORTE &= ~(1<<6);
+		PORTB |= (1<<0);
+		PORTB &= ~(1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 34 & sensor_out < 51){
+		PORTE |= (1<<6);
+		PORTB |= (1<<0);
+		PORTB &= ~(1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 51 & sensor_out < 68){
+		PORTE &= ~(1<<6);
+		PORTB &= ~(1<<0);
+		PORTB |= (1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 68 & sensor_out < 85){
+		PORTE |= (1<<6);
+		PORTB &= ~(1<<0);
+		PORTB |= (1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 85 & sensor_out < 102){
+		PORTE &= ~(1<<6);
+		PORTB |= (1<<0);
+		PORTB |= (1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 102 & sensor_out < 119){
+		PORTE |=(1<<6);
+		PORTB |= (1<<0);
+		PORTB |= (1<<1);
+		PORTB &= ~(1<<2);
+	}
+	else if(sensor_out >= 119 & sensor_out < 136){
+		PORTE &= ~(1<<6);
+		PORTB &= ~(1<<0);
+		PORTB &= ~(1<<1);
+		PORTB |= (1<<2);
+	}
+	else if(sensor_out >= 136 & sensor_out < 153){
+		PORTE |=(1<<6);
+		PORTB &= ~(1<<0);
+		PORTB &= ~(1<<1);
+		PORTB |= (1<<2);
+	}
+	else if(sensor_out >= 153 & sensor_out < 170){
+		PORTE &= ~(1<<6);
+		PORTB |= (1<<0);
+		PORTB &= ~(1<<1);
+		PORTB |= (1<<2);
+	}
+	else if(sensor_out >= 170 & sensor_out < 187){
+		PORTE |= (1<<6);
+		PORTB |= (1<<0);
+		PORTB &= ~(1<<1);
+		PORTB |= (1<<2);
+
+	}
+	else if(sensor_out >= 187 & sensor_out < 204){
+		PORTE &= ~(1<<6);
+		PORTB &= ~(1<<0);
+		PORTB |= (1<<1);
+		PORTB |= (1<<2);
+
+	}
+	else if(sensor_out >= 204 & sensor_out < 221){
+		PORTE |= (1<<6);
+		PORTB &= ~(1<<0);
+		PORTB |= (1<<1);
+		PORTB |= (1<<2);
+		
+	}
+	else if(sensor_out >= 221 & sensor_out < 238){
+		PORTE &= ~(1<<6);
+		PORTB |= (1<<0);
+		PORTB |= (1<<1);
+		PORTB |= (1<<2);
+		
+	}
+	else if(sensor_out >= 238 & sensor_out < 255){
+		PORTE |= (1<<6);
+		PORTB |= (1<<0);
+		PORTB |= (1<<1);
+		PORTB |= (1<<2);
+		
+	}
+	
+
+
+
+	OCR0A = base_speed+proportional; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
+	OCR1A = base_speed-proportional;
 	}
 	return 0;
 }
