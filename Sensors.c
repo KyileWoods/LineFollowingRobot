@@ -21,22 +21,22 @@ int read_LED(int LED_number) {
 		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0);   //MUX |= 7;
 		break;
 
-	case 5:  //ADC11
+	case 8:  //ADC11
 		ADCSRB |= (1 << MUX5);
 		ADMUX |= (1 << MUX1) | (1 << MUX0);
 		break;
 
-	case 6:  //ADC10
+	case 7:  //ADC10
 		ADCSRB |= (1 << MUX5);
 		ADMUX |= (1 << MUX1);
 		break;
 
-	case 7:  //ADC9
+	case 6:  //ADC9
 		ADCSRB |= (1 << MUX5);
 		ADMUX |= (1 << MUX0);
 		break;
 
-	case 8:  //ADC8
+	case 5:  //ADC8
 		ADCSRB |= (1 << MUX5);
 		//No ADMUX bits for ADC8
 		break;

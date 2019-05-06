@@ -42,11 +42,12 @@ int16_t sum_LED_values=0;
 int16_t weighted_sum_LED_values=0;
 
 float error=0;
-int16_t kp=10;
+int16_t kp=15;
 int16_t proportional=0;
 
-int base_speed = 30;
-
+int base_speed = 35;
+int motor1;
+int motor2;
 int16_t sumcheck =1;
 
 int main() {
@@ -80,27 +81,41 @@ int main() {
 		LED8=0;
 
 		
-		LED1 = 255-read_LED(1);
-		LED2 = 255-read_LED(2);
-		LED3 = 255-read_LED(3);
-		LED4 = 255-read_LED(4);
-		LED5 = 255-read_LED(5);
-		LED6 = 255-read_LED(6);
-		LED7 = 255-read_LED(7);
-		LED8 = 255-read_LED(8);
+		LED1 = read_LED(1);
+		LED2 = read_LED(2);
+		LED3 = read_LED(3);
+		LED4 = read_LED(4);
+		LED5 = read_LED(5);
+		LED6 = read_LED(6);
+		LED7 = read_LED(7);
+		LED8 = read_LED(8);
 
 		sum_LED_values = LED1+LED2+LED3+LED4+LED5+LED6+LED7+LED8;				//MAX=2040
-		weighted_sum_LED_values = (1*LED2)+(2*LED3)+(3*LED4)+(4*LED5)+(5*LED6)+(6*LED7)+(7*LED8); //MAX= 9180
+		weighted_sum_LED_values = (1*LED1)+(2*LED2)+(3*LED3)+(4*LED4)+(5*LED5)+(6*LED6)+(7*LED7)+(8*LED8); //MAX= 9180
 
-	error = ((weighted_sum_LED_values /(sum_LED_values))-3.5)/7;//MAX==7 //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
+	error = (weighted_sum_LED_values /(sum_LED_values))-4.5;//MAX==7 //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
 				 			 	                    				    // error-> 0+/-3500
-	proportional = kp*error; //~35
+	proportional = kp*error; //+/-~35
 
-	OCR0A = LED2;//OCR0A shoud increase as the error becomes positive. We should #define these as 'rightMotor" /'leftMotor"
-	//OCR1A = 1+base_speed-proportional;
+	motor1 = 1+base_speed - proportional;//OCR0A shoud increase as the error becomes positive. We should #define these as 'rightMotor" /'leftMotor"
+	motor2 = 1+base_speed + proportional;
 	
+	if (motor1 > 255){
+		motor1 = 255;
+	}
+	else if (motor1 < 0){
+		motor1 = 0;
+	}
 
-
+	if (motor2 > 255){
+		motor2 = 255;
+	}
+	else if (motor2 < 0){
+		motor2 = 0;
+	}
+	OCR0A = motor1;
+	OCR1A = motor2;
+	
 /*int sensor_out = LED5;
 if(sensor_out >= 0 & sensor_out < 17){
 		PORTE |=(1<<6);
