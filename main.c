@@ -27,36 +27,30 @@ int balancer = 0;
 int left_advance = 0;
 int right_advance = 0;
 
-//Constants
-int wheel_width_mm = 140;
-int wheel_circumference_mm = 115;
-
-
 
 int16_t LED_values[8];
-int LED1;
-int LED2;
-int LED3;
-int LED4;
-int LED5;
-int LED6;
-int LED7;
-int LED8;
+uint16_t LED1;
+uint16_t LED2;
+uint16_t LED3;
+uint16_t LED4;
+uint16_t LED5;
+uint16_t LED6;
+uint16_t LED7;
+uint16_t LED8;
 
 int16_t sum_LED_values=0;
 int16_t weighted_sum_LED_values=0;
 
-int32_t error=0;
-int16_t kp=30;
+float error=0;
+int16_t kp=10;
 int16_t proportional=0;
 
-int16_t base_speed = 25;
-//base_speed = (3500*kp)/10000; //duty cycle /255
-
+int base_speed = 30;
 
 int16_t sumcheck =1;
 
 int main() {
+
 	 	//For safety: flash and wait for some amount of seconds
 	shutter(30,20);
 	_delay_ms(2000); 
@@ -76,25 +70,38 @@ int main() {
 		sum_LED_values = 0;
 		weighted_sum_LED_values=0;
 
+		LED1=0;
+		LED2=0;
+		LED3=0;
+		LED4=0;
+		LED5=0;
+		LED6=0;
+		LED7=0;
+		LED8=0;
+
 		
-		LED1 = read_LED(1);
-		LED2 = read_LED(2);
-		LED3 = read_LED(3);
-		LED4 = read_LED(4);
-		LED5 = read_LED(5);
-		LED6 = read_LED(6);
-		LED7 = read_LED(7);
-		LED8 = read_LED(8);
+		LED1 = 255-read_LED(1);
+		LED2 = 255-read_LED(2);
+		LED3 = 255-read_LED(3);
+		LED4 = 255-read_LED(4);
+		LED5 = 255-read_LED(5);
+		LED6 = 255-read_LED(6);
+		LED7 = 255-read_LED(7);
+		LED8 = 255-read_LED(8);
 
-		sum_LED_values = LED1+LED2+LED3+LED4+LED5+LED6+LED7+LED8;
-		weighted_sum_LED_values = LED2+2*LED3+3*LED4+4*LED5+5*LED6+6*LED7+7*LED8;
+		sum_LED_values = LED1+LED2+LED3+LED4+LED5+LED6+LED7+LED8;				//MAX=2040
+		weighted_sum_LED_values = (1*LED2)+(2*LED3)+(3*LED4)+(4*LED5)+(5*LED6)+(6*LED7)+(7*LED8); //MAX= 9180
 
-	error = ((1000*weighted_sum_LED_values) / sum_LED_values)-3500; //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
-																	// error-> 0+/-3500
-	proportional = kp*(error/10000); //~35
+	error = ((weighted_sum_LED_values /(sum_LED_values))-3.5)/7;//MAX==7 //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
+				 			 	                    				    // error-> 0+/-3500
+	proportional = kp*error; //~35
+
+	OCR0A = LED2;//OCR0A shoud increase as the error becomes positive. We should #define these as 'rightMotor" /'leftMotor"
+	//OCR1A = 1+base_speed-proportional;
+	
 
 
-int sensor_out = LED5;
+/*int sensor_out = LED5;
 if(sensor_out >= 0 & sensor_out < 17){
 		PORTE |=(1<<6);
 		PORTB &= ~(1<<0);
@@ -190,13 +197,8 @@ if(sensor_out >= 0 & sensor_out < 17){
 		PORTB |= (1<<2);
 		
 	}
-	
-
-
-
-	OCR0A = base_speed+proportional; //Not sure yet which one should gain the error, which subtracts. We should #define these as 'rightMotor" /'leftMotor"
-	OCR1A = base_speed-proportional;
-	}
+	*/
+}
 	return 0;
 }
 	
