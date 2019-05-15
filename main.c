@@ -93,20 +93,17 @@ int main() {
 		LED8 = read_LED(8);
 
 
-		right_error = (4*LED1);//+(3*LED2)+(2*LED3)+(1*LED4);
-		left_error = (1*LED5);//+(2*LED6)+(3*LED7)+(4*LED8);
+		right_error = (4*LED1)+(3*LED2)+(2*LED3)+(1*LED4);
+		left_error = (1*LED5)+(2*LED6)+(3*LED7)+(5*LED8);
 		error = right_error-left_error;
 
-		/*weighted_sum_LED_values = (1*LED1)+(2*LED2)+(3*LED3)+(4*LED4)+(5*LED5)+(6*LED6)+(7*LED7)+(8*LED8); //MAX= 9180
-		sum_LED_values = LED1+LED2+LED3+LED4+LED5+LED6+LED7+LED8;				//MAX=2040
-		*/
+		proportional = (error/base_speed)*(base_speed/2);
 
-	//error = (weighted_sum_LED_values /(sum_LED_values))-4.5;//MAX==7 //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
-				 			 	                    				    // error-> 0+/-3500
-	proportional = (error/2560)*(base_speed/2); //+/-~35
 
-	motor1 = 1+ base_speed - proportional; //1+base_speed - proportional;//OCR0A shoud increase as the error becomes positive. We should #define these as 'rightMotor" /'leftMotor"
-	motor2 = 1+ base_speed + proportional; //1+base_speed + proportional;
+
+
+	motor1 = base_speed + proportional; //1+base_speed - proportional;//OCR0A shoud increase as the error becomes positive. We should #define these as 'rightMotor" /'leftMotor"
+	motor2 =  base_speed - proportional; //1+base_speed + proportional;
 	
 /*	if (motor1 > 255){
 		motor1 = 255;
