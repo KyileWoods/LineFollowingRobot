@@ -5,7 +5,7 @@ int read_LED(int LED_number) {
 	ADMUX = 0x00;
 	ADCSRB = 0x00;
 	ADMUX |= (1 << REFS1) | (1 << REFS0) | (1 << ADLAR);
-	ADCSRA |= (1 << ADEN) | (1 << ADATE) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+	ADCSRA |= (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); //DATE BIT MUST BE AT ZERO!!!! NO FREERUNING MODE!
 
 	switch (LED_number) {
 	case 1:  //ADC4
@@ -21,22 +21,22 @@ int read_LED(int LED_number) {
 		ADMUX |= (1 << MUX2) | (1 << MUX1) | (1 << MUX0);   //MUX |= 7;
 		break;
 
-	case 8:  //ADC11
+	case 5:  //ADC11
 		ADCSRB |= (1 << MUX5);
 		ADMUX |= (1 << MUX1) | (1 << MUX0);
 		break;
 
-	case 7:  //ADC10
+	case 6:  //ADC10
 		ADCSRB |= (1 << MUX5);
 		ADMUX |= (1 << MUX1);
 		break;
 
-	case 6:  //ADC9
+	case 7:  //ADC9
 		ADCSRB |= (1 << MUX5);
 		ADMUX |= (1 << MUX0);
 		break;
 
-	case 5:  //ADC8
+	case 8:  //ADC8
 		ADCSRB |= (1 << MUX5);
 		//No ADMUX bits for ADC8
 		break;

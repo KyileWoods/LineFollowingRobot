@@ -28,29 +28,28 @@ int left_advance = 0;
 int right_advance = 0;
 
 
-int16_t LED_values[8];
-uint16_t LED1;
-uint16_t LED2;
-uint16_t LED3;
-uint16_t LED4;
-uint16_t LED5;
-uint16_t LED6;
-uint16_t LED7;
-uint16_t LED8;
+int32_t LED_values[8];
+uint32_t LED1;
+uint32_t LED2;
+uint32_t LED3;
+uint32_t LED4;
+uint32_t LED5;
+uint32_t LED6;
+uint32_t LED7;
+uint32_t LED8;
 
-int16_t sum_LED_values=0;
-int16_t weighted_sum_LED_values=0;
+int32_t sum_LED_values=0;
+int32_t weighted_sum_LED_values=0;
+int32_t Q = (5000-4000);
 
-float error=0;
-float right_error=0;
-float left_error=0;
-float kp=0.1;
-int16_t proportional=0;
+int32_t error=0;
+int32_t kp=10;
+int32_t proportional=0;
+int32_t minimum_read = 180;
 
 int base_speed = 25;
 int motor1;
 int motor2;
-int16_t sumcheck =1;
 
 int main() {
 
@@ -60,7 +59,7 @@ int main() {
 	 
 	 
 	//Turn on the IR-emittors
-	DDRB |= (1 << 3);
+	DDRB |= (1 << 3) |(1 << 1);
 	PORTB |= (1 << 3);
 	
 	PortDasBinary(0);
@@ -83,30 +82,37 @@ int main() {
 		LED8=0;
 
 		
-		LED1 = read_LED(1);
-		LED2 = read_LED(2);
-		LED3 = read_LED(3);
-		LED4 = read_LED(4);
-		LED5 = read_LED(5);
-		LED6 = read_LED(6);
-		LED7 = read_LED(7);
-		LED8 = read_LED(8);
+		LED1 = read_LED(1)-minimum_read;
+		LED2 = read_LED(2)-minimum_read;
+		LED3 = read_LED(3)-minimum_read;
+		LED4 = read_LED(4)-minimum_read;
+		LED5 = read_LED(5)-minimum_read;
+		LED6 = read_LED(6)-minimum_read;
+		LED7 = read_LED(7)-minimum_read;
+		LED8 = read_LED(8)-minimum_read;
 
 
-		right_error = (4*LED1);//+(3*LED2)+(2*LED3)+(1*LED4);
-		left_error = (1*LED5);//+(2*LED6)+(3*LED7)+(4*LED8);
-		error = right_error-left_error;
+	
 
-		/*weighted_sum_LED_values = (1*LED1)+(2*LED2)+(3*LED3)+(4*LED4)+(5*LED5)+(6*LED6)+(7*LED7)+(8*LED8); //MAX= 9180
-		sum_LED_values = LED1+LED2+LED3+LED4+LED5+LED6+LED7+LED8;				//MAX=2040
-		*/
+		weighted_sum_LED_values = (/*(1*LED2)+(2*LED3)+*/(3*LED4)/*+(4*LED5)*/+(5*LED6)/*+(6*LED7)+(7*LED8)*/)*1000; //MAX= 385*1000
+		sum_LED_values = /*LED1+LED2+LED3+*/LED4+/*LED5*/+LED6;//+LED7+LED8;				//MAX=2040
+																					//Highest Q=255
+		
 
-	//error = (weighted_sum_LED_values /(sum_LED_values))-4.5;//MAX==7 //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
+	error = (weighted_sum_LED_values /(sum_LED_values))-1500;//MAX==3500 //The Thousands are there to maintain decimal places during division! [ 12/2=6 ];[ 1.2/2=0 ]
 				 			 	                    				    // error-> 0+/-3500
-	proportional = (error/2560)*(base_speed/2); //+/-~35
+	
+
+	proportional = kp*(error/1500)*(base_speed/2); //+/-~35
+	//PORTB ^= (1<<1);
+
 
 	motor1 = 1+ base_speed - proportional; //1+base_speed - proportional;//OCR0A shoud increase as the error becomes positive. We should #define these as 'rightMotor" /'leftMotor"
 	motor2 = 1+ base_speed + proportional; //1+base_speed + proportional;
+
+	if(motor1<=0 |motor2 <=0){shutter(20,20);}
+
+	//if(proportional<=0){shutter(10,10);}
 	
 /*	if (motor1 > 255){
 		motor1 = 255;
